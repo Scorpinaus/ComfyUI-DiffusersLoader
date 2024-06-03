@@ -33,6 +33,7 @@ There are 2 main areas of this node package: SD1.5 Loaders and SDXL Loaders.
 ### Set-up
 
 For the nodes to work, you will need to create SD15 and SDXL sub-directories under the diffusers folder as seen below:
+
 ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/b6d779da-5481-4666-ba24-faf2063ee76d)  ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/7f71b2bd-172b-4380-9653-a1a2d0a09799)
 
 Put your converted diffusers model into either SD15 for SD1.5 models or SDXL for SDXL models.
@@ -40,6 +41,7 @@ Put your converted diffusers model into either SD15 for SD1.5 models or SDXL for
 ### Stable Diffusion 1.5 Loaders
 
 There are 4 main nodes:
+
 ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/93e8627d-4827-45cc-af98-3f9182133339)
 
 
@@ -51,6 +53,7 @@ There are 4 main nodes:
 
 ### Workflow Example
 The combined loader work in the same manner as existing checkpoints loader as seen in this workflow: 
+
 ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/6b079ac4-1479-43e2-87f6-879919e34d0b)
 
 ## Limitations & Future Improvements
