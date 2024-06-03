@@ -69,4 +69,5 @@ This project is licensed under the MIT License.
 ## Contact
 
 Hafiz Saffie - hafiz.safs@gmail.com
+
 Project Link: https://github.com/Scorpinaus/ComfyUI-DiffusersLoader
