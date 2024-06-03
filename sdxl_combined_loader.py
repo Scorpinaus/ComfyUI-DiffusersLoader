@@ -34,7 +34,7 @@ class CombinedDiffusersSDXLLoader:
 
     RETURN_TYPES = ("MODEL", "CLIP", "VAE")
     FUNCTION = "load_models"
-    CATEGORY = "testing_nodes"
+    CATEGORY = "DiffusersLoader/SDXL"
 
     def load_models(self, sub_directory):
         base_path = self.get_base_path()

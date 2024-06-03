@@ -23,7 +23,7 @@ class SD15CLIPLoader:
 
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_clip"
-    CATEGORY = "testing_nodes"
+    CATEGORY = "DiffusersLoader/SD1.5"
 
     def load_clip(self, sub_directory, clip_type="stable_diffusion"):
         # Determine the clip type

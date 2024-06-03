@@ -35,7 +35,7 @@ class SD15VAELoader:
 
     RETURN_TYPES = ("VAE",)
     FUNCTION = "load_vae"
-    CATEGORY = "testing_nodes"
+    CATEGORY = "DiffusersLoader/SD1.5"
 
     def load_vae(self, sub_directory):
         base_path = self.get_base_path()

@@ -38,7 +38,7 @@ class SD15UNETLoader:
     
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "load_unet"
-    CATEGORY = "testing_nodes"
+    CATEGORY = "DiffusersLoader/SD1.5"
 
     def load_unet(self, sub_directory):
         unet_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'diffusers', 'SD15', sub_directory, 'unet'))

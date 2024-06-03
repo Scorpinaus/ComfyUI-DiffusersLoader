@@ -18,7 +18,7 @@ class CombinedDiffusersSD15Loader:
 
     RETURN_TYPES = ("CLIP", "MODEL", "VAE")
     FUNCTION = "load_models"
-    CATEGORY = "testing_nodes"
+    CATEGORY = "DiffusersLoader/SD1.5"
 
     def load_models(self, sub_directory, clip_type="stable_diffusion"):
         clip = self.load_clip(sub_directory, clip_type)

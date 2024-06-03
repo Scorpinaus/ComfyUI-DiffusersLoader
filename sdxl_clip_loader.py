@@ -21,7 +21,7 @@ class SDXLCLIPLoader:
     
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_sdxl_clip"
-    CATEGORY = "testing_nodes"
+    CATEGORY = "DiffusersLoader/SDXL"
 
     def load_sdxl_clip(self, sub_directory):
         script_dir = os.path.dirname(os.path.realpath(__file__))

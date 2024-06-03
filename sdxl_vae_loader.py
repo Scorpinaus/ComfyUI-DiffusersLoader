@@ -35,7 +35,7 @@ class SDXLVAELoader:
 
     RETURN_TYPES = ("VAE",)
     FUNCTION = "load_vae"
-    CATEGORY = "testing_nodes"
+    CATEGORY = "DiffusersLoader/SDXL"
 
     def load_vae(self, sub_directory):
         base_path = self.get_base_path()
