@@ -36,8 +36,8 @@ class SD15CLIPLoader:
         text_encoder_dir = os.path.join(script_dir, "..", "..", "models", "diffusers", "SD15", sub_directory, "text_encoder")
         print(f"SD15CLIPLoader:Text encoder directory: {text_encoder_dir}")  # Debug print
 
-        # Find the .safetensors file in the text_encoder directory
-        text_encoder_file = self.find_safetensors_file(text_encoder_dir)
+        # Find the .safetensors or .bin file in the text_encoder directory
+        text_encoder_file = self.find_model_file(text_encoder_dir)
         text_encoder_path = os.path.join(text_encoder_dir, text_encoder_file)
         print(f"SD15CLIPLoader:Text encoder path: {text_encoder_path}")  # Debug print
 
@@ -50,11 +50,11 @@ class SD15CLIPLoader:
         return (clip,)
 
     @staticmethod
-    def find_safetensors_file(directory):
+    def find_model_file(directory):
         for file in os.listdir(directory):
-            if file.endswith(".safetensors"):
+            if file.endswith(".safetensors") or file.endswith(".bin"):
                 return file
-        raise FileNotFoundError(f"SD15CLIPLoader:No .safetensors file found in {directory}")
+        raise FileNotFoundError(f"SD15CLIPLoader:No .safetensors file or .bin file found in {directory}")
 
 # Register the node in the ComfyUI framework
 NODE_CLASS_MAPPINGS = {

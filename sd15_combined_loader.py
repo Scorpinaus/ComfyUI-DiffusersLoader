@@ -33,7 +33,7 @@ class CombinedDiffusersSD15Loader:
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
         text_encoder_dir = os.path.join(script_dir, "..", "..", "models", "diffusers", "SD15", sub_directory, "text_encoder")
-        text_encoder_file = self.find_safetensors_file(text_encoder_dir)
+        text_encoder_file = self.find_model_file(text_encoder_dir)
         text_encoder_path = os.path.join(text_encoder_dir, text_encoder_file)
 
         if not os.path.exists(text_encoder_path):
@@ -44,7 +44,7 @@ class CombinedDiffusersSD15Loader:
 
     def load_unet(self, sub_directory):
         unet_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'diffusers', 'SD15', sub_directory, 'unet'))
-        diffusion_model_path = self.find_safetensors_file(unet_folder)
+        diffusion_model_path = self.find_model_file(unet_folder)
 
         if not os.path.exists(diffusion_model_path):
             raise FileNotFoundError(f"{os.path.basename(diffusion_model_path)} not found in the directory: {diffusion_model_path}")
@@ -59,7 +59,7 @@ class CombinedDiffusersSD15Loader:
     def load_vae(self, sub_directory):
         base_path = self.get_base_path()
         vae_folder = os.path.join(base_path, sub_directory, "vae")
-        vae_filename = self.find_safetensors_file(vae_folder)
+        vae_filename = self.find_model_file(vae_folder)
         vae_path = os.path.join(vae_folder, vae_filename)
         full_path = os.path.abspath(vae_path)
 
@@ -81,11 +81,11 @@ class CombinedDiffusersSD15Loader:
         return base_path
 
     @staticmethod
-    def find_safetensors_file(directory):
+    def find_model_file(directory):
         for file in os.listdir(directory):
-            if file.endswith(".safetensors"):
+            if file.endswith(".safetensors") or file.endswith(".bin"):
                 return os.path.join(directory, file)
-        raise FileNotFoundError(f"No .safetensors file found in {directory}")
+        raise FileNotFoundError(f"No .safetensors file or . bin file found in {directory}")
 
     @staticmethod
     def handle_corrupted_file(unet_folder):

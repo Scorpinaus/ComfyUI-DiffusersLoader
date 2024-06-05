@@ -17,11 +17,11 @@ class CombinedDiffusersSDXLLoader:
         return [name for name in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, name))]
 
     @staticmethod
-    def find_safetensors_file(directory):
+    def find_model_file(directory):
         for file in os.listdir(directory):
-            if file.endswith(".safetensors"):
+            if file.endswith(".safetensors") or file.endswith(".bin"):
                 return os.path.join(directory, file)
-        raise FileNotFoundError(f"CombinedDiffusersSDXLLoader: No .safetensors file found in {directory}")
+        raise FileNotFoundError(f"CombinedDiffusersSDXLLoader: No .safetensors file or .bin file found in {directory}")
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -48,7 +48,7 @@ class CombinedDiffusersSDXLLoader:
 
     def load_vae(self, base_path):
         vae_folder = os.path.join(base_path, "vae")
-        vae_path = self.find_safetensors_file(vae_folder)
+        vae_path = self.find_model_file(vae_folder)
         print(f"CombinedDiffusersSDXLLoader: Attempting to load VAE model from: {vae_path}")
 
         vae_sd = comfy.utils.load_torch_file(vae_path)
@@ -56,7 +56,7 @@ class CombinedDiffusersSDXLLoader:
 
     def load_unet(self, base_path):
         unet_folder = os.path.join(base_path, 'unet')
-        unet_path = self.find_safetensors_file(unet_folder)
+        unet_path = self.find_model_file(unet_folder)
         print(f"CombinedDiffusersSDXLLoader: Attempting to load UNET model from: {unet_path}")
 
         try:
@@ -73,8 +73,8 @@ class CombinedDiffusersSDXLLoader:
         text_encoder_dir1 = os.path.join(base_path, "text_encoder")
         text_encoder_dir2 = os.path.join(base_path, "text_encoder_2")
 
-        text_encoder_path1 = self.find_safetensors_file(text_encoder_dir1)
-        text_encoder_path2 = self.find_safetensors_file(text_encoder_dir2)
+        text_encoder_path1 = self.find_model_file(text_encoder_dir1)
+        text_encoder_path2 = self.find_model_file(text_encoder_dir2)
 
         print(f"CombinedDiffusersSDXLLoader: Checking paths:\n{text_encoder_path1}\n{text_encoder_path2}")
 

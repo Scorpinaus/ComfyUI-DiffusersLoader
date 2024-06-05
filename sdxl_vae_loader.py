@@ -18,11 +18,11 @@ class SDXLVAELoader:
         return [name for name in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, name))]
 
     @staticmethod
-    def find_safetensors_file(directory):
+    def find_model_file(directory):
         for file in os.listdir(directory):
-            if file.endswith(".safetensors"):
+            if file.endswith(".safetensors") or file.endswith(".bin"):
                 return file
-        raise FileNotFoundError(f"SDXLVAELoader:No .safetensors file found in {directory}")
+        raise FileNotFoundError(f"SDXLVAELoader:No .safetensors file or .bin file found in {directory}")
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -40,7 +40,7 @@ class SDXLVAELoader:
     def load_vae(self, sub_directory):
         base_path = self.get_base_path()
         vae_folder = os.path.join(base_path, sub_directory, "vae")
-        vae_filename = self.find_safetensors_file(vae_folder)
+        vae_filename = self.find_model_file(vae_folder)
         vae_path = os.path.join(vae_folder, vae_filename)
         full_path = os.path.abspath(vae_path)
 

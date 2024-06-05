@@ -42,7 +42,7 @@ class SDXLUNETLoader:
 
     def load_unet(self, sub_directory):
         unet_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'diffusers', 'SDXL', sub_directory, 'unet'))
-        diffusion_model_path = self.find_safetensors_file(unet_folder)
+        diffusion_model_path = self.find_model_file(unet_folder)
         print(f"SDXLUNETLoader:Attempting to load UNET model from: {diffusion_model_path}")
         
         if not os.path.exists(diffusion_model_path):
@@ -60,11 +60,11 @@ class SDXLUNETLoader:
             raise e
 
     @staticmethod
-    def find_safetensors_file(directory):
+    def find_model_file(directory):
         for file in os.listdir(directory):
-            if file.endswith(".safetensors"):
+            if file.endswith(".safetensors") or file.endswith(".bin"):
                 return os.path.join(directory, file)
-        raise FileNotFoundError(f"SDXLUNETLoader:No .safetensors file found in {directory}")
+        raise FileNotFoundError(f"SDXLUNETLoader:No .safetensors file or .bin file found in {directory}")
 
 # Mapping the node to make it recognizable in the ComfyUI framework
 NODE_CLASS_MAPPINGS = {

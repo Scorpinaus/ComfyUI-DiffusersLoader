@@ -30,8 +30,8 @@ class SDXLCLIPLoader:
         text_encoder_dir1 = os.path.join(base_path, "text_encoder")
         text_encoder_dir2 = os.path.join(base_path, "text_encoder_2")
 
-        text_encoder_file1 = self.find_safetensors_file(text_encoder_dir1)
-        text_encoder_file2 = self.find_safetensors_file(text_encoder_dir2)
+        text_encoder_file1 = self.find_model_file(text_encoder_dir1)
+        text_encoder_file2 = self.find_model_file(text_encoder_dir2)
 
         text_encoder_path1 = os.path.join(text_encoder_dir1, text_encoder_file1)
         text_encoder_path2 = os.path.join(text_encoder_dir2, text_encoder_file2)
@@ -51,9 +51,9 @@ class SDXLCLIPLoader:
         return (clip,)
 
     @staticmethod
-    def find_safetensors_file(directory):
+    def find_model_file(directory):
         for file in os.listdir(directory):
-            if file.endswith(".safetensors"):
+            if file.endswith(".safetensors") or file.endswith(".bin"):
                 return file
         raise FileNotFoundError(f"No .safetensors file found in {directory}")
 
