@@ -20,12 +20,15 @@ This project provides tools and loaders for integrating diffusers format checkpo
 ## Installation
 
 Follow these steps to install and set up the project:
-1. Clone the repository
-git clone https://github.com/Scorpinaus/ComfyUI-DiffusersLoader.git
+1. Download the node via ComfyUI-Manager by searching: DiffusersLoader:
+![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/f4e962f9-aee3-4027-9e8b-c559451cf819)
 
-2. Navigate to the project directory & add-it to ComfyUI manager under custom nodes folder
+2. Add nodes to your workflow by:
+  - Add Nodes -> DiffusersLoader -> SD1.5 or SDXL -> Select your nodes
+  - ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/68c3232d-7f05-4a48-88a7-f7498ac2139c)
+  - ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/a83724a1-9afb-467a-b3d4-9006afcc6557)
 
-3. Add nodes to your workflow
+
 
 ## Features
 There are 2 main areas of this node package: SD1.5 Loaders and SDXL Loaders.
