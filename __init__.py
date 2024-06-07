@@ -29,6 +29,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "SDXLVAELoader": "SDXL VAE Loader",
     "SDXLCLIPLoader": "SDXL CLIP Loader", 
     "CombinedDiffusersSD15Loader" : "Combined Diffusers SD15 Loader",
-    "CombinedDiffusersSDXLLoader" : "Combined Diffusers SDXL Loader" 
+    "CombinedDiffusersSDXLLoader" : "Combined Diffusers SDXL Loader",
     "CombinedDiffusersLoader": "Combined Diffusers Loader"
 }
