@@ -12,8 +12,15 @@ class CombinedDiffusersLoader:
         return base_path
 
     @staticmethod
-    def get_subdirectories(base_path):
-        return [name for name in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, name))]
+    def get_model_directories(base_path):
+        model_dirs = []
+        for root, dirs, files in os.walk(base_path):
+            if "model_index.json" in files:
+                model_dirs.append(os.path.relpath(root, base_path))
+            #Remove unwanted sub-directories from dirs
+            dirs[:] = [d for d in dirs if d not in ["vae", "unet", "text_encoder", "text_encoder_2"]] 
+        
+        return model_dirs
 
     @staticmethod
     def find_model_file(directory):
@@ -25,10 +32,10 @@ class CombinedDiffusersLoader:
     @classmethod
     def INPUT_TYPES(cls):
         base_path = cls.get_base_path()
-        subdirectories = cls.get_subdirectories(base_path)
+        model_directories = cls.get_model_directories(base_path)
         return {
             "required": {
-                "sub_directory": (subdirectories,),
+                "sub_directory": (model_directories,),
                 "clip_type": (["stable_diffusion", "stable_cascade"],)
             }
         }
