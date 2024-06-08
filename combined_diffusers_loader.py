@@ -33,7 +33,6 @@ class CombinedDiffusersLoader:
     def INPUT_TYPES(cls):
         base_path = cls.get_base_path()
         model_directories = cls.get_model_directories(base_path)
-        print(f"CombinedDiffusersLoader: model_directories: \n{model_directories}")
         return {
             "required": {
                 "sub_directory": (model_directories,),
@@ -47,10 +46,8 @@ class CombinedDiffusersLoader:
 
     def load_models(self, sub_directory, clip_type="stable_diffusion"):
         base_path = self.get_base_path()
-        print(f"CombinedDiffusersLoader: base_path: \n{base_path}")
-        print(f"CombinedDiffusersLoader: Sub_directory: \n{sub_directory}")
         sub_dir_path = os.path.join(base_path, sub_directory)
-        print(f"CombinedDiffusersLoader: Sub_dir_path: \n{sub_dir_path}")
+        
         model_type = self.detect_model_type(sub_dir_path)
         
         vae_model = self.load_vae(sub_dir_path)
@@ -68,6 +65,7 @@ class CombinedDiffusersLoader:
         elif os.path.exists(text_encoder_dir1):
             return "SD15"
         else:
+            print(f"CombinedDiffusersLoader: Sub_dir_path: \n{sub_dir_path}")
             raise FileNotFoundError("No valid text_encoder directories found. This model is not SD15 or SDXL")
 
     def load_clip(self, base_path, clip_type="stable_diffusion", model_type="SD15"):
