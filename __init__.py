@@ -7,6 +7,9 @@ from .sdxl_clip_loader import SDXLCLIPLoader
 from .sd15_combined_loader import CombinedDiffusersSD15Loader
 from .sdxl_combined_loader import CombinedDiffusersSDXLLoader
 from .combined_diffusers_loader import CombinedDiffusersLoader
+from .diffusers_clip_loader import DiffusersClipLoader
+from .diffusers_unet_loader import DiffusersUNETLoader
+from .diffusers_vae_loader import DiffusersVAELoader
 
 NODE_CLASS_MAPPINGS = {
     "SD15UNETLoader": SD15UNETLoader,
@@ -17,7 +20,10 @@ NODE_CLASS_MAPPINGS = {
     "SDXLCLIPLoader": SDXLCLIPLoader,
     "CombinedDiffusersSD15Loader": CombinedDiffusersSD15Loader,
     "CombinedDiffusersSDXLLoader": CombinedDiffusersSDXLLoader,
-    "CombinedDiffusersLoader": CombinedDiffusersLoader
+    "CombinedDiffusersLoader": CombinedDiffusersLoader,
+    "DiffusersClipLoader": DiffusersClipLoader,
+    "DiffusersUNETLoader": DiffusersUNETLoader,
+    "DiffusersVAELoader": DiffusersVAELoader
     
 }
 
@@ -30,5 +36,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "SDXLCLIPLoader": "SDXL CLIP Loader", 
     "CombinedDiffusersSD15Loader" : "Combined Diffusers SD15 Loader",
     "CombinedDiffusersSDXLLoader" : "Combined Diffusers SDXL Loader",
-    "CombinedDiffusersLoader": "Combined Diffusers Loader"
+    "CombinedDiffusersLoader": "Combined Diffusers Loader",
+    "DiffusersClipLoader": "Diffusers CLIP Loader",
+    "DiffusersUNETLoader": "Diffusers UNET Loader",
+    "DiffusersVAELoader": "Diffusers VAE Loader"
 }

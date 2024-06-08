@@ -33,6 +33,7 @@ class CombinedDiffusersLoader:
     def INPUT_TYPES(cls):
         base_path = cls.get_base_path()
         model_directories = cls.get_model_directories(base_path)
+        print(f"CombinedDiffusersLoader: model_directories: \n{model_directories}")
         return {
             "required": {
                 "sub_directory": (model_directories,),
@@ -46,10 +47,11 @@ class CombinedDiffusersLoader:
 
     def load_models(self, sub_directory, clip_type="stable_diffusion"):
         base_path = self.get_base_path()
+        print(f"CombinedDiffusersLoader: base_path: \n{base_path}")
         sub_dir_path = os.path.join(base_path, sub_directory)
 
         model_type = self.detect_model_type(sub_dir_path)
-
+        print(f"CombinedDiffusersLoader: Sub_dir_path: \n{sub_dir_path}")
         vae_model = self.load_vae(sub_dir_path)
         unet_model = self.load_unet(sub_dir_path)
         clip_model = self.load_clip(sub_dir_path, clip_type, model_type)
