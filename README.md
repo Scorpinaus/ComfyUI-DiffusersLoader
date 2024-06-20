@@ -17,6 +17,7 @@ This project was created to understand how the DiffusersLoader avaliable in comf
 
 This project provides tools and loaders for integrating diffusers format checkpoint models with ComfyUI. It helps users who already have diffusers format checkpoints to seamlessly use them without needing to convert them to the standard format.
 
+
 ## Installation
 
 Follow these steps to install and set up the project:
@@ -24,43 +25,32 @@ Follow these steps to install and set up the project:
 ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/f4e962f9-aee3-4027-9e8b-c559451cf819)
 
 2. Add nodes to your workflow by:
-  - Add Nodes -> DiffusersLoader -> SD1.5 or SDXL -> Select your nodes
+  - Add Nodes -> DiffusersLoader -> Combined -> CombinedDiffusersLoader
   - ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/68c3232d-7f05-4a48-88a7-f7498ac2139c)
   - ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/a83724a1-9afb-467a-b3d4-9006afcc6557)
 
 
 
 ## Features
-There are 2 main areas of this node package: SD1.5 Loaders and SDXL Loaders.
-
-### Set-up
-
-For the nodes to work, you will need to create SD15 and SDXL sub-directories under the diffusers folder as seen below:
-
-![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/b6d779da-5481-4666-ba24-faf2063ee76d)  ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/7f71b2bd-172b-4380-9653-a1a2d0a09799)
-
-Put your converted diffusers model into either SD15 for SD1.5 models or SDXL for SDXL models.
-
-### Stable Diffusion 1.5 Loaders
-
-There are 4 main nodes:
-
-![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/93e8627d-4827-45cc-af98-3f9182133339)
-
-
-### Stable Diffusion XL Loaders
-
-There are 4 main nodes:
-
-![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/0d3121b6-ba7f-47fb-94a3-018c656598fe)
+The CombinedDiffusersLoader supports loading of diffusers checkpoints for:
+- SD1.5
+- SDXL
+- SD3
 
 ### Workflow Example
 The combined loader work in the same manner as existing checkpoints loader as seen in this workflow: 
 
 ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/6b079ac4-1479-43e2-87f6-879919e34d0b)
 
+Select the name of the diffusers checkpoint folder from the dropdown list and connect the nodes.
+
+Take note for SD3:
+- You have the option for the T5 encoder (text_encoder_3) to select either part_1, part_2, or all (both). 
+- Selecting all will create a combined T5 encoder in the same folder named combined_text_encoder.safetensors for the first use.
+
 ## Limitations & Future Improvements
-The combined loader and CLIP loader does not work for inpainting models.
+Future improvements is to update the seperate VAE, CLIP and UNET loaders.
+
 
 
 ## Contributing
@@ -69,8 +59,7 @@ Contributions are always welcome! Please follow the contributing guidelines to s
 ## License
 This project is licensed under the MIT License.
 
-## Contact
-
+## Contact the Author
 Hafiz Saffie - hafiz.safs@gmail.com
 
 Project Link: https://github.com/Scorpinaus/ComfyUI-DiffusersLoader
