@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-diffusersloader"
-description = "This node pack allows loading of CLIP, MODEL, VAE aspects for both SD1.5 and SDXL checkpoints that is converted to diffusers format."
+description = "This node pack allows loading of SD checkpoints that uses diffusers format in comfyUI."
 version = "1.0.0"
 license = "LICENSE"
 
