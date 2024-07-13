@@ -50,7 +50,7 @@ Take note for SD3:
 
 ## Limitations & Future Improvements
 Future improvements is to update the seperate VAE, CLIP and UNET loaders.
-
+Add support for AuraFlow and other compatible diffusers format checkpoints
 
 
 ## Contributing
