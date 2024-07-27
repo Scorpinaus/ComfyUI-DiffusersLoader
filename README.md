@@ -26,8 +26,8 @@ Follow these steps to install and set up the project:
 
 2. Add nodes to your workflow by:
   - Add Nodes -> DiffusersLoader -> Combined -> CombinedDiffusersLoader
-  - ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/68c3232d-7f05-4a48-88a7-f7498ac2139c)
-  - ![image](https://github.com/Scorpinaus/ComfyUI-DiffusersLoader/assets/85672737/a83724a1-9afb-467a-b3d4-9006afcc6557)
+  - ![image](https://github.com/user-attachments/assets/79a576b2-dc27-49e4-a7c7-ec0e01bc5bad)
+
 
 
 
@@ -49,7 +49,6 @@ Take note for SD3:
 - Selecting all will create a combined T5 encoder in the same folder named combined_text_encoder.safetensors for the first use.
 
 ## Limitations & Future Improvements
-Future improvements is to update the seperate VAE, CLIP and UNET loaders.
 Add support for AuraFlow and other compatible diffusers format checkpoints
 
 
