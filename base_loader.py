@@ -14,6 +14,8 @@ class DiffusersLoaderBase:
             return "SD3"
         elif os.path.exists(text_encoder_dir1) and os.path.exists(text_encoder_dir2):
             return "SDXL"
+        elif os.path.exists(text_encoder_dir1) and os.path.exists(transformer):
+            return "AuraFlow"
         elif os.path.exists(text_encoder_dir1):
             return "SD15"
         else:

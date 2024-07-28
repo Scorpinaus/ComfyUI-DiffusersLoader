@@ -13,7 +13,8 @@ class CombinedDiffusersLoader:
             "required": {
                 "sub_directory": (model_directories,),
                 "clip_type": (["stable_diffusion", "stable_cascade"],),
-                "file_parts": (["none", "all", "part_1", "part_2"],)
+                "clip_parts": (["all", "part_1", "part_2"],),
+                "transformer_parts": (["all", "part_1", "part_2", "part_3"],),
             }
         }
 
@@ -22,9 +23,14 @@ class CombinedDiffusersLoader:
     CATEGORY = "DiffusersLoader/Combined"
 
     @classmethod
-    def load_models(cls, sub_directory, clip_type="stable_diffusion", file_parts="all"):
-        unet_model = DiffusersUNETLoader.load_model(sub_directory)
-        clip_model = DiffusersClipLoader.load_model(sub_directory, clip_type, file_parts)
+    def load_models(cls, sub_directory, clip_type="stable_diffusion", clip_parts="all", transformer_parts="all"):
+
+        unet_model = DiffusersUNETLoader.load_model(sub_directory, transformer_parts)
+        
+
+        clip_model = DiffusersClipLoader.load_model(sub_directory, clip_type, clip_parts)
+        
+
         vae_model = DiffusersVAELoader.load_model(sub_directory)
 
         return unet_model, clip_model, vae_model

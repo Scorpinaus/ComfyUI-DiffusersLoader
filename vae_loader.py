@@ -24,11 +24,15 @@ class DiffusersVAELoader(DiffusersLoaderBase):
 
     @classmethod
     def load_model(cls, sub_directory):
+        
         base_path = DiffusersUtils.get_base_path()
         sub_dir_path = os.path.join(base_path, sub_directory)
         
         vae_folder = os.path.join(sub_dir_path, "vae")
         vae_path = DiffusersUtils.find_model_file(vae_folder)
+        
+        DiffusersUtils.check_and_clear_cache('vae', vae_path)
+        
         print(f"DiffusersVAELoader: Attempting to load VAE model from: {vae_path}")
 
         try:
