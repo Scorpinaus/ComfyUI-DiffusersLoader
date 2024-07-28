@@ -52,7 +52,7 @@ Take note for SD3:
 
 ## Limitations & Future Improvements
 Add support for other compatible diffusers format checkpoints
-Memory Limitation for lower 
+For AuraFlow and SD3, the loading and combining for the combined_model.safetensors will have a delay for low-vram or low-system ram machines
 
 
 ## Contributing
