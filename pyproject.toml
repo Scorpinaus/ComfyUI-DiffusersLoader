@@ -9,6 +9,6 @@ Repository = "https://github.com/Scorpinaus/ComfyUI-DiffusersLoader"
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
-PublisherId = "Scorpinaus"
+PublisherId = "mhms"
 DisplayName = "ComfyUI-DiffusersLoader"
 Icon = ""
