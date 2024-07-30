@@ -33,9 +33,11 @@ Follow these steps to install and set up the project:
 
 ## Features
 The CombinedDiffusersLoader supports loading of diffusers checkpoints for:
-- SD1.5
+- SD 1.5
+- SD 2.1
 - SDXL
 - SD3
+- AuraFlow
 
 ### Workflow Example
 The combined loader work in the same manner as existing checkpoints loader as seen in this workflow: 
@@ -49,7 +51,8 @@ Take note for SD3:
 - Selecting all will create a combined T5 encoder in the same folder named combined_text_encoder.safetensors for the first use.
 
 ## Limitations & Future Improvements
-Add support for AuraFlow and other compatible diffusers format checkpoints
+Add support for other compatible diffusers format checkpoints
+For AuraFlow and SD3, the loading and combining for the combined_model.safetensors will have a delay for low-vram or low-system ram machines
 
 
 ## Contributing
