@@ -1,5 +1,5 @@
 [project]
-name = "ComfyUI-DiffusersLoader"
+name = "comfyui-diffusersloader"
 description = "This node pack allows loading of SD checkpoints that uses diffusers format in comfyUI"
 version = "1.0.0"
 license = {file = "LICENSE"}
