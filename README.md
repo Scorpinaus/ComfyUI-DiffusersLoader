@@ -28,6 +28,7 @@ Follow these steps to install and set up the project:
   - Add Nodes -> DiffusersLoader -> Combined -> CombinedDiffusersLoader
   - ![image](https://github.com/user-attachments/assets/79a576b2-dc27-49e4-a7c7-ec0e01bc5bad)
 
+3. Connect the DiffusersLoader
 
 
 

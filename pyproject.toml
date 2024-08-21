@@ -2,7 +2,7 @@
 name = "comfyui-diffusersloader"
 description = "This node pack allows loading of SD checkpoints that uses diffusers format in comfyUI
 - Supports SD1.5, SD2, SDXL, SD3, Flux and AuraFlow Checkpoints"
-version = "1.0.1"
+version = "1.1.0"
 license = {file = "LICENSE"}
 
 [project.urls]
