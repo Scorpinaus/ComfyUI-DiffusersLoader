@@ -15,7 +15,7 @@ This project was created to understand how the DiffusersLoader available in comf
 
 ## Introduction
 
-This project provides tools and loaders for integrating diffusers format checkpoint models with ComfyUI. It helps users who already have diffusers format checkpoints to seamlessly use them without needing to convert them to the standard format.
+This project provides tools and loaders for integrating diffusers format checkpoint models with ComfyUI. It helps users who already have diffusers format checkpoints to seamlessly use them without needing to convert them to the standard checkpoint format.
 
 
 ## Installation
@@ -51,8 +51,8 @@ Take note for SD3, AuraFlow and Flux:
 - The first run through will be slightly slower due to creation of a combined_safetensors.safetensors
 
 ## Limitations & Future Improvements
-Add support for other compatible diffusers format checkpoints
-For AuraFlow and SD3, the loading and combining for the combined_model.safetensors will have a delay for low-vram or low-system ram machines
+- Add support for other compatible diffusers format checkpoints
+- For AuraFlow and SD3, the loading and combining for the combined_model.safetensors will have a delay for low-vram or low-system ram machines
 
 
 ## Contributing
