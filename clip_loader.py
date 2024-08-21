@@ -25,7 +25,6 @@ class DiffusersClipLoader(DiffusersLoaderBase):
 
     @classmethod
     def load_model(cls, sub_directory, clip_type="stable_diffusion", clip_parts="all"):
-        
         base_path = DiffusersUtils.get_base_path()
         sub_dir_path = os.path.join(base_path, sub_directory)
         model_type = cls.detect_model_type(sub_dir_path)
@@ -37,23 +36,18 @@ class DiffusersClipLoader(DiffusersLoaderBase):
         text_encoder_dir1 = os.path.join(sub_dir_path, "text_encoder")
         text_encoder_paths = [DiffusersUtils.find_model_file(text_encoder_dir1)]
 
-        if model_type in ["SDXL", "SD3"]:
-            text_encoder_dir2 = os.path.join(sub_dir_path, "text_encoder_2")
-            text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir2))
-            
-        if model_type == "SD3":
-            text_encoder_dir3 = os.path.join(sub_dir_path, "text_encoder_3")
-            print("clip_parts Selected:", clip_parts)
-            if clip_parts == "all":
-                combined_file_path = os.path.join(text_encoder_dir3, "combined_text_encoder.safetensors")
-                if not os.path.exists(combined_file_path):
-                    combined_file_path = DiffusersUtils.combine_safetensor_files(text_encoder_dir3, base_path)
-                text_encoder_paths.append(combined_file_path)
-            elif clip_parts == "part_1":
-                text_encoder_paths += DiffusersUtils.find_model_files(text_encoder_dir3, num_parts=1)
-            elif clip_parts == "part_2":
-                text_encoder_paths += DiffusersUtils.find_model_files(text_encoder_dir3, num_parts=2)[1:]
-            
+        if model_type == "SDXL":
+            cls.handle_sdxl_clip(sub_dir_path, text_encoder_paths)
+        elif model_type == "SD3":
+            cls.handle_sd3_clip(sub_dir_path, text_encoder_paths, clip_parts)
+        elif model_type == "Flux":
+            cls.handle_flux_clip(sub_dir_path, text_encoder_paths, clip_parts)
+        elif model_type == "AuraFlow":
+            cls.handle_auraflow_clip(sub_dir_path, text_encoder_paths)
+        else:  # SD15 and other single text encoder models
+            text_encoder_dir = os.path.join(sub_dir_path, "text_encoder")
+            text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir))
+
         for path in text_encoder_paths:
             DiffusersUtils.check_and_clear_cache('clip', path)
         
@@ -69,3 +63,38 @@ class DiffusersClipLoader(DiffusersLoaderBase):
             raise AttributeError("DiffusersClipLoader: Loaded clip model does not have 'tokenize' method.")
 
         return clip_model
+
+    @classmethod
+    def handle_sdxl_clip(cls, sub_dir_path, text_encoder_paths):
+        text_encoder_dir2 = os.path.join(sub_dir_path, "text_encoder_2")
+        text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir2))
+
+    @classmethod
+    def handle_sd3_clip(cls, sub_dir_path, text_encoder_paths, clip_parts):
+        cls.handle_sdxl_clip(sub_dir_path, text_encoder_paths)
+        text_encoder_dir3 = os.path.join(sub_dir_path, "text_encoder_3")
+        cls.handle_multi_part_clip(text_encoder_dir3, text_encoder_paths, clip_parts)
+
+    @classmethod
+    def handle_flux_clip(cls, sub_dir_path, text_encoder_paths, clip_parts):
+        cls.handle_sdxl_clip(sub_dir_path, text_encoder_paths)
+        text_encoder_dir2 = os.path.join(sub_dir_path, "text_encoder_2")
+        cls.handle_multi_part_clip(text_encoder_dir2, text_encoder_paths, clip_parts)
+
+    @classmethod
+    def handle_auraflow_clip(cls, sub_dir_path, text_encoder_paths):
+        text_encoder_dir = os.path.join(sub_dir_path, "text_encoder")
+        text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir))
+        print(f"AuraFlow CLIP model path: {text_encoder_paths[-1]}")
+
+    @classmethod
+    def handle_multi_part_clip(cls, encoder_dir, text_encoder_paths, clip_parts):
+        if clip_parts == "all":
+            combined_file_path = os.path.join(encoder_dir, "combined_text_encoder.safetensors")
+            if not os.path.exists(combined_file_path):
+                combined_file_path = DiffusersUtils.combine_safetensor_files(encoder_dir, os.path.dirname(encoder_dir))
+            text_encoder_paths.append(combined_file_path)
+        elif clip_parts == "part_1":
+            text_encoder_paths += DiffusersUtils.find_model_files(encoder_dir, num_parts=1)
+        elif clip_parts == "part_2":
+            text_encoder_paths += DiffusersUtils.find_model_files(encoder_dir, num_parts=2)[1:]
