@@ -17,7 +17,7 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
         }
     
     RETURN_TYPES = ("MODEL",)
-    FUNCTION = "load_unet"
+    FUNCTION = "load_unet/transformer"
     CATEGORY = "DiffusersLoader"
 
     @classmethod

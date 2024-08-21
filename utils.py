@@ -68,10 +68,14 @@ class DiffusersUtils:
             raise FileNotFoundError(f"No .safetensors or .bin file found in {directory}")
         
         if file_parts:
-            return [file for file in files if any(part in file for part in file_parts)]
+            filtered_files = [file for file in files if any(part in file for part in file_parts)]
         elif num_parts:
-            return [file for file in files if any(f"0000{i+1}-of-" in file for i in range(num_parts))]
-        return files
+            filtered_files = [file for file in files if any(f"0000{i+1}-of-" in file for i in range(num_parts))]
+        else:
+            filtered_files = files
+        print("Filtered files:", filtered_files)
+        return sorted(filtered_files)
+    
     
     @staticmethod
     def find_model_file(directory):

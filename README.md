@@ -2,7 +2,7 @@
 
 This project aims to create loaders for diffusers format checkpoint models, making it easier for ComfyUI users to use diffusers format checkpoints instead of the standard checkpoint formats.
 
-This project was created to understand how the DiffusersLoader avaliable in comfyUI works and enhance the functionality by making usable loaders.
+This project was created to understand how the DiffusersLoader available in comfyUI works and enhance the functionality by making usable loaders.
 
 ## Table of Contents
 
@@ -38,6 +38,7 @@ The CombinedDiffusersLoader supports loading of diffusers checkpoints for:
 - SDXL
 - SD3
 - AuraFlow
+- Flux
 
 ### Workflow Example
 The combined loader work in the same manner as existing checkpoints loader as seen in this workflow: 
@@ -46,9 +47,8 @@ The combined loader work in the same manner as existing checkpoints loader as se
 
 Select the name of the diffusers checkpoint folder from the dropdown list and connect the nodes.
 
-Take note for SD3:
-- You have the option for the T5 encoder (text_encoder_3) to select either part_1, part_2, or all (both). 
-- Selecting all will create a combined T5 encoder in the same folder named combined_text_encoder.safetensors for the first use.
+Take note for SD3, AuraFlow and Flux:
+- The first run through will be slightly slower due to creation of a combined_safetensors.safetensors
 
 ## Limitations & Future Improvements
 Add support for other compatible diffusers format checkpoints
@@ -65,3 +65,6 @@ This project is licensed under the MIT License.
 Hafiz Saffie - hafiz.safs@gmail.com
 
 Project Link: https://github.com/Scorpinaus/ComfyUI-DiffusersLoader
+
+## Version History
+21/8 - Compatibility Update With ComfyUI, Addition of Flux Support

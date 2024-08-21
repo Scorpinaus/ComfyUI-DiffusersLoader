@@ -13,6 +13,7 @@ class DiffusersLoaderBase:
                 model_info = json.load(f)
             
             class_name = model_info.get("_class_name")
+            print("Class Name:", class_name)
             
             if class_name:
                 if class_name == "FluxPipeline":
@@ -36,9 +37,6 @@ class DiffusersLoaderBase:
             return "SD15"
         else:
             return "Unknown"
-
-        print(f"Detected model type: {model_type}")
-        return model_type
 
     @classmethod
     def load_model(cls, sub_directory):
