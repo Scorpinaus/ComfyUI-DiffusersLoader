@@ -2,6 +2,7 @@
 import os
 import json
 from .utils import DiffusersUtils
+from .model_type_config import MODEL_TYPE_CRITERIA
 
 class DiffusersLoaderBase:
     @classmethod
@@ -14,29 +15,45 @@ class DiffusersLoaderBase:
             
             class_name = model_info.get("_class_name")
             print("Class Name:", class_name)
+            components = set(model_info.keys())
+            print("Components:", components)
             
-            if class_name:
-                if class_name == "FluxPipeline":
-                    return "Flux"
-                elif class_name == "StableDiffusionPipeline":
-                    if "text_encoder_2" in model_info:
-                        return "SDXL"
-                    else:
-                        return "SD15"
-                elif class_name == "StableDiffusion3Pipeline":
-                    return "SD3"
-                elif class_name == "AuraFlowPipeline":
-                    return "AuraFlow"
+            for model_type, criteria in MODEL_TYPE_CRITERIA.items():
+                if class_name == criteria["class_name"]:
+                    required_components = set(criteria["required_components"])
+                    if required_components.issubset(components):
+                        if "absent_components" in criteria:
+                            absent_components = set(criteria["absent_components"])
+                            if absent_components.intersection(components):
+                                continue
+
+                        # Check additional criteria
+                        additional_criteria_match = True
+                        for key in ["feature_extractor", "requires_safety_checker", "force_zeros_for_empty_prompt", "image_encoder"]:
+                            if key in criteria:
+                                if model_info.get(key) != criteria[key]:
+                                    additional_criteria_match = False
+                                    break
+                        
+                        if additional_criteria_match:
+                            return model_type
         
         # If we couldn't determine the type from model_index.json, detect based on folder structure
         if os.path.exists(os.path.join(sub_dir_path, "transformer")):
-            return "Flux"
+            if os.path.exists(os.path.join(sub_dir_path, "text_encoder_3")):
+                return "SD3"
+            elif os.path.exists(os.path.join(sub_dir_path, "text_encoder_2")):
+                return "SDXL"
+            else:
+                # We can't reliably distinguish between AuraFlow and Flux based on folder structure alone
+                return "AuraFlow_or_Flux"
         elif os.path.exists(os.path.join(sub_dir_path, "text_encoder_2")):
             return "SDXL"
         elif os.path.exists(os.path.join(sub_dir_path, "text_encoder")):
-            return "SD15"
-        else:
-            return "Unknown"
+            # We can't reliably distinguish between SD15 and SD21 based on folder structure alone
+            return "SD15_or_SD21"
+        
+        return "Unknown"
 
     @classmethod
     def load_model(cls, sub_directory):
