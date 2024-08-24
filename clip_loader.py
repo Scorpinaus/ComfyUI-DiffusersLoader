@@ -1,6 +1,8 @@
 # clip_loader.py
 import os
+import json
 import comfy.sd
+import comfy.utils
 from .base_loader import DiffusersLoaderBase
 from .utils import DiffusersUtils
 
@@ -33,13 +35,18 @@ class DiffusersClipLoader(DiffusersLoaderBase):
         
         text_encoder_paths = cls.get_text_encoder_paths(sub_dir_path, model_type)
         
+        clip_data = []
         for path in text_encoder_paths:
-            DiffusersUtils.check_and_clear_cache('clip', path)
+            if isinstance(path, dict):
+                clip_data.append(path)
+            else:
+                DiffusersUtils.check_and_clear_cache('clip', path)
+                clip_data.append(comfy.utils.load_torch_file(path, safe_load=True))
             
         print(f"DiffusersClipLoader: Loading CLIP model(s) from: {text_encoder_paths}")
         
         try:
-            clip_model = comfy.sd.load_clip(ckpt_paths=text_encoder_paths, 
+            clip_model = comfy.sd.load_text_encoder_state_dicts(clip_data, 
             embedding_directory=os.path.join(sub_dir_path, "embeddings"), clip_type=clip_type_enum)
         except Exception as e:
             print(f"DiffusersClipLoader: Error loading clip model: {e}")
@@ -85,10 +92,34 @@ class DiffusersClipLoader(DiffusersLoaderBase):
             
             if model_type == "SD3":
                 text_encoder_dir3 = os.path.join(sub_dir_path, "text_encoder_3")
-                text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir3))
+                
+                #For text_encoder_3, we will use the index file
+                index_file = os.path.join(text_encoder_dir3, "text_encoder_3_model.safetensors.index.fp16.json")
+                if os.path.exists(index_file):
+                    text_encoder_paths.append(cls.load_sd3_text_encoder_3(index_file))
+                else:
+                    #If index file not found
+                    text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir3))
         
         else: #For SD15 or other single text encoder models
             text_encoder_dir = os.path.join(sub_dir_path, "text_encoder")
             text_encoder_paths = [DiffusersUtils.find_model_file(text_encoder_dir)]
         
         return text_encoder_paths
+    
+    @classmethod
+    def load_sd3_text_encoder_3(cls, index_file):
+        with open(index_file, 'r') as f:
+            index_data = json.load(f)
+            
+        weight_map = index_data['weight_map']
+        base_path = os.path.dirname(index_file)
+        
+        sd = {}
+        for key, file_name in weight_map.items():
+            file_path = os.path.join(base_path, file_name)
+            if os.path.exists(file_path):
+                part_sd = comfy.utils.load_torch_file(file_path, safe_load=True)
+                sd.update({key: part_sd[key] for key in part_sd if key in weight_map})
+        
+        return sd
