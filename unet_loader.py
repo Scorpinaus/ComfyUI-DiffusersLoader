@@ -1,6 +1,8 @@
 # unet_loader.py
 import os
 import comfy.sd
+import comfy.utils
+import json
 from .base_loader import DiffusersLoaderBase
 from .utils import DiffusersUtils
 import torch
@@ -43,7 +45,19 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
             model_options["dtype"] = torch.float8_e5m2
                     
         try:
-            model = comfy.sd.load_diffusion_model(unet_path, model_options=model_options)
+            if model_type == "AuraFlow" and transformer_parts == "all" and unet_path.endswith('.json'):
+                #Load model using index_file
+                with open(unet_path, 'r') as f:
+                    index_data = json.load(f)
+                weight_map = index_data['weight_map']
+                state_dict = {}
+                
+                for key, file in weight_map.items():
+                    file_path = os.path.join(os.path.dirname(unet_path), file)
+                    state_dict.update(comfy.utils.load_torch_file(file_path))
+                model = cls.load_diffusion_model_from_state_dict(state_dict, model_options=model_options)
+            else:
+                model = comfy.sd.load_diffusion_model(unet_path, model_options=model_options)
             print("UNET/Transformer model loaded successfully")
             return model
         except RuntimeError as e:
@@ -51,7 +65,18 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
                 print("Out of memory error. Attempting to clear memory and retry...")
                 DiffusersUtils.clear_memory()
                 try:
-                    model = comfy.sd.load_diffusion_model(unet_path, model_options=model_options)
+                    if model_type == "AuraFlow" and transformer_parts == "all" and unet_path.endswith('.json'):
+                        # Load model using the index file (retry)
+                        with open(unet_path, 'r') as f:
+                            index_data = json.load(f)
+                        weight_map = index_data['weight_map']
+                        state_dict = {}
+                        for key, file in weight_map.items():
+                            file_path = os.path.join(os.path.dirname(unet_path), file)
+                            state_dict.update(comfy.utils.load_torch_file(file_path))
+                        model = cls.load_diffusion_model_from_state_dict(state_dict, model_options=model_options)
+                    else:
+                        model = comfy.sd.load_diffusion_model(unet_path, model_options=model_options)
                     print("UNET/Transformer model loaded successfully after memory clear")
                     return model
                 except Exception as retry_e:
@@ -60,6 +85,11 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
             else:
                 print(f"DiffusersUNETLoader: Error loading UNET/Transformer model: {e}")
                 raise
+    
+    @classmethod
+    def load_diffusion_model_from_state_dict(cls, state_dict, model_options):
+        model = comfy.sd.load_diffusion_model_state_dict(state_dict, model_options=model_options)
+        return model
     
     @classmethod
     def get_unet_path(cls, sub_dir_path, model_type, transformer_parts):
@@ -100,7 +130,31 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
 
     @classmethod
     def handle_auraflow_transformer(cls, unet_folder, transformer_parts):
-        return cls.handle_transformer(unet_folder, transformer_parts, num_parts=2)
+        #Find file ending with 'index.json'
+        index_files = [f for f in os.listdir(unet_folder) if f.endswith('index.json')] 
+        print(f"Index files: {index_files}")
+        if index_files:
+            index_file = os.path.join(unet_folder, index_files[0])
+            print(f"Found index file: {index_file}")
+            
+            if transformer_parts == "all":
+                return index_file
+            
+            else:
+                with open(index_file, 'r') as f:
+                    index_data = json.load(f)    
+                    
+                part_num = int(transformer_parts.split('_')[1])
+                part_files = [file for file in index_data['weight_map'].values() if f"-0000{part_num}-of-" in file]
+                
+                if part_files:
+                    return os.path.join(unet_folder, part_files[0])
+                else:
+                    print(f"No file found for part {part_num}")
+                    return None
+        else:
+            print(f"No index file found in {unet_folder}. Checking for combined transformer step")
+            return cls.handle_transformer(unet_folder, transformer_parts, num_parts=2)
 
     @classmethod
     def handle_sd3_transformer(cls, unet_folder):
