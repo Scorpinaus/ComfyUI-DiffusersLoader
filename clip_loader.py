@@ -105,9 +105,10 @@ class DiffusersClipLoader(DiffusersLoaderBase):
             
             if model_type == "Flux":
                 # use the index file
-                index_files = [f for f in os.listdir(text_encoder_dir2) if f.endswith('index.json')]
+                index_files = [f for f in os.listdir(text_encoder_dir2) if f.endswith('index.json') or 'index.' in f and f.endswith('.json')]
                 if index_files:
-                    text_encoder_paths.append(os.path.join(text_encoder_dir2, index_files[0]))
+                    index_file = os.path.join(text_encoder_dir2, index_files[0])
+                    text_encoder_paths.append(cls.load_flux_text_encoder_2(index_file))
                 else:
                     print(f"No index file found in {text_encoder_dir2}. Checking for combined text encoder step")
                     text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir2))
@@ -117,9 +118,10 @@ class DiffusersClipLoader(DiffusersLoaderBase):
             if model_type == "SD3":
                 text_encoder_dir3 = os.path.join(sub_dir_path, "text_encoder_3")
                 
-                #For text_encoder_3, we will use the index file
-                index_file = os.path.join(text_encoder_dir3, "text_encoder_3_model.safetensors.index.fp16.json")
-                if os.path.exists(index_file):
+                #For text_encoder_3, we will use the index file. Look up for any file ending with 'index.json' or 'index.*.json'	
+                index_files = [f for f in os.listdir(text_encoder_dir3) if f.endswith('index.json') or 'index.' in f and f.endswith('.json')]
+                if index_files:
+                    index_file = os.path.join(text_encoder_dir3, index_files[0])
                     text_encoder_paths.append(cls.load_sd3_text_encoder_3(index_file))
                 else:
                     #If index file not found
@@ -136,6 +138,23 @@ class DiffusersClipLoader(DiffusersLoaderBase):
         with open(index_file, 'r') as f:
             index_data = json.load(f)
             
+        weight_map = index_data['weight_map']
+        base_path = os.path.dirname(index_file)
+        
+        sd = {}
+        for key, file_name in weight_map.items():
+            file_path = os.path.join(base_path, file_name)
+            if os.path.exists(file_path):
+                part_sd = comfy.utils.load_torch_file(file_path, safe_load=True)
+                sd.update({key: part_sd[key] for key in part_sd if key in weight_map})
+        
+        return sd
+    
+    @classmethod
+    def load_flux_text_encoder_2(cls, index_file):
+        with open(index_file, 'r') as f:
+            index_data = json.load(f)
+        
         weight_map = index_data['weight_map']
         base_path = os.path.dirname(index_file)
         

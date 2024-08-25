@@ -46,34 +46,16 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
         
         print(f"model_options: {model_options}")
         
-        def load_from_index(index_path):
-            print(f"Load_from_index: index_path: {index_path}")
-            
-            with open(index_path, 'r') as f:
-                index_data = json.load(f)
-            weight_map = index_data['weight_map']
-            state_dict = {}
-            
-            for key, file in weight_map.items():
-                file_path = os.path.join(os.path.dirname(index_path), file)
-                part_dict = comfy.utils.load_torch_file(file_path, safe_load=True)
-                state_dict.update(part_dict)
-                del part_dict
-                #torch.cuda.empty_cache()
-            
-            print(f"Load from index function completed. Returning state_dict")
-            return state_dict
-        
         try:
             if model_type == "AuraFlow" and transformer_parts == "all" and unet_path.endswith('index.json'):
                 
-                state_dict = load_from_index(unet_path)
+                state_dict = cls.load_from_index(unet_path)
                 print(f"State_dict obtained")                
                 model = cls.load_diffusion_model_from_state_dict(state_dict, model_options=model_options)
                 
             elif model_type == "Flux" and transformer_parts == "all" and unet_path.endswith('index.json'):
                 
-                state_dict = load_from_index(unet_path)
+                state_dict = cls.load_from_index(unet_path)
                 print(f"State_dict obtained")  
                 model = cls.load_diffusion_model_from_state_dict(state_dict, model_options=model_options)
                 
@@ -89,12 +71,12 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
                 try:
                     if model_type == "AuraFlow" and transformer_parts == "all" and unet_path.endswith('index.json'):
                         # Load model using the index file (retry)
-                        state_dict = load_from_index(unet_path)                        
+                        state_dict = cls.load_from_index(unet_path)                    
                         model = cls.load_diffusion_model_from_state_dict(state_dict, model_options=model_options)
                         
                     elif model_type == "Flux" and transformer_parts == "all" and unet_path.endswith('index.json'):
                         
-                        state_dict = load_from_index(unet_path)
+                        state_dict = cls.load_from_index(unet_path)
                         model = cls.load_diffusion_model_from_state_dict(state_dict, model_options=model_options)
                         
                     else:
@@ -107,6 +89,25 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
             else:
                 print(f"DiffusersUNETLoader: Error loading UNET/Transformer model: {e}")
                 raise
+    
+    @classmethod
+    def load_from_index(cls, index_path):
+        print(f"Load_from_index: index_path: {index_path}")
+        
+        with open(index_path, 'r') as f:
+            index_data = json.load(f)
+        weight_map = index_data['weight_map']
+        state_dict = {}
+        
+        for key, file in weight_map.items():
+            file_path = os.path.join(os.path.dirname(index_path), file)
+            part_dict = comfy.utils.load_torch_file(file_path, safe_load=True)
+            state_dict.update(part_dict)
+            del part_dict
+            #torch.cuda.empty_cache()
+        
+        print(f"Load from index function completed. Returning state_dict")
+        return state_dict
     
     @classmethod
     def load_diffusion_model_from_state_dict(cls, state_dict, model_options):
@@ -154,7 +155,7 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
     @classmethod
     def handle_auraflow_transformer(cls, unet_folder, transformer_parts):
         #Find file ending with 'index.json'
-        index_files = [f for f in os.listdir(unet_folder) if f.endswith('index.json')] 
+        index_files = [f for f in os.listdir(unet_folder) if f.endswith('index.json') or 'index.' in f and f.endswith('.json')] 
         print(f"Index files: {index_files}")
         if index_files:
             index_file = os.path.join(unet_folder, index_files[0])
@@ -185,7 +186,7 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
 
     @classmethod
     def handle_flux_transformer(cls, unet_folder, transformer_parts):
-        index_files = [f for f in os.listdir(unet_folder) if f.endswith('index.json')]
+        index_files = [f for f in os.listdir(unet_folder) if f.endswith('index.json') or 'index.' in f and f.endswith('.json')] 
         if index_files:
             index_file = os.path.join(unet_folder, index_files[0])
             print(f"Found index file: {index_file}")
@@ -198,6 +199,7 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
                     
                 part_num = int(transformer_parts.split('_')[1])
                 part_files = [file for file in index_data['weight_map'].values() if f"-0000{part_num}-of-" in file]
+                print(f"Part files: {part_files}")
                 
                 if part_files:
                     return os.path.join(unet_folder, part_files[0])
