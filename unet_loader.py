@@ -43,38 +43,60 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
             model_options["dtype"] = torch.float8_e4m3fn
         elif weight_dtype == "fp8_e5m2":
             model_options["dtype"] = torch.float8_e5m2
-                    
+        
+        print(f"model_options: {model_options}")
+        
+        def load_from_index(index_path):
+            print(f"Load_from_index: index_path: {index_path}")
+            
+            with open(index_path, 'r') as f:
+                index_data = json.load(f)
+            weight_map = index_data['weight_map']
+            state_dict = {}
+            
+            for key, file in weight_map.items():
+                file_path = os.path.join(os.path.dirname(index_path), file)
+                part_dict = comfy.utils.load_torch_file(file_path, safe_load=True)
+                state_dict.update(part_dict)
+                del part_dict
+                #torch.cuda.empty_cache()
+            
+            print(f"Load from index function completed. Returning state_dict")
+            return state_dict
+        
         try:
-            if model_type == "AuraFlow" and transformer_parts == "all" and unet_path.endswith('.json'):
-                #Load model using index_file
-                with open(unet_path, 'r') as f:
-                    index_data = json.load(f)
-                weight_map = index_data['weight_map']
-                state_dict = {}
+            if model_type == "AuraFlow" and transformer_parts == "all" and unet_path.endswith('index.json'):
                 
-                for key, file in weight_map.items():
-                    file_path = os.path.join(os.path.dirname(unet_path), file)
-                    state_dict.update(comfy.utils.load_torch_file(file_path))
+                state_dict = load_from_index(unet_path)
+                print(f"State_dict obtained")                
                 model = cls.load_diffusion_model_from_state_dict(state_dict, model_options=model_options)
+                
+            elif model_type == "Flux" and transformer_parts == "all" and unet_path.endswith('index.json'):
+                
+                state_dict = load_from_index(unet_path)
+                print(f"State_dict obtained")  
+                model = cls.load_diffusion_model_from_state_dict(state_dict, model_options=model_options)
+                
             else:
                 model = comfy.sd.load_diffusion_model(unet_path, model_options=model_options)
             print("UNET/Transformer model loaded successfully")
             return model
+        
         except RuntimeError as e:
             if "out of memory" in str(e):
                 print("Out of memory error. Attempting to clear memory and retry...")
                 DiffusersUtils.clear_memory()
                 try:
-                    if model_type == "AuraFlow" and transformer_parts == "all" and unet_path.endswith('.json'):
+                    if model_type == "AuraFlow" and transformer_parts == "all" and unet_path.endswith('index.json'):
                         # Load model using the index file (retry)
-                        with open(unet_path, 'r') as f:
-                            index_data = json.load(f)
-                        weight_map = index_data['weight_map']
-                        state_dict = {}
-                        for key, file in weight_map.items():
-                            file_path = os.path.join(os.path.dirname(unet_path), file)
-                            state_dict.update(comfy.utils.load_torch_file(file_path))
+                        state_dict = load_from_index(unet_path)                        
                         model = cls.load_diffusion_model_from_state_dict(state_dict, model_options=model_options)
+                        
+                    elif model_type == "Flux" and transformer_parts == "all" and unet_path.endswith('index.json'):
+                        
+                        state_dict = load_from_index(unet_path)
+                        model = cls.load_diffusion_model_from_state_dict(state_dict, model_options=model_options)
+                        
                     else:
                         model = comfy.sd.load_diffusion_model(unet_path, model_options=model_options)
                     print("UNET/Transformer model loaded successfully after memory clear")
@@ -88,6 +110,7 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
     
     @classmethod
     def load_diffusion_model_from_state_dict(cls, state_dict, model_options):
+        print("Running load_diffusion_model_from_state_dict function...")	
         model = comfy.sd.load_diffusion_model_state_dict(state_dict, model_options=model_options)
         return model
     
@@ -162,5 +185,27 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
 
     @classmethod
     def handle_flux_transformer(cls, unet_folder, transformer_parts):
-        return cls.handle_transformer(unet_folder, transformer_parts, num_parts=3)
+        index_files = [f for f in os.listdir(unet_folder) if f.endswith('index.json')]
+        if index_files:
+            index_file = os.path.join(unet_folder, index_files[0])
+            print(f"Found index file: {index_file}")
+            
+            if transformer_parts == "all":
+                return index_file
+            else:
+                with open(index_file, 'r') as f:
+                    index_data = json.load(f)
+                    
+                part_num = int(transformer_parts.split('_')[1])
+                part_files = [file for file in index_data['weight_map'].values() if f"-0000{part_num}-of-" in file]
+                
+                if part_files:
+                    return os.path.join(unet_folder, part_files[0])
+                else:
+                    print(f"No file found for part {part_num}")
+                    return None
+        
+        else:
+            print(f"No index file found in {unet_folder}. Checking for combined transformer step")
+            return cls.handle_transformer(unet_folder, transformer_parts, num_parts=3)
 

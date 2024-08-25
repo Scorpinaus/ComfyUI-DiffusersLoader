@@ -1,6 +1,7 @@
 # clip_loader.py
 import os
 import json
+import torch
 import comfy.sd
 import comfy.utils
 from .base_loader import DiffusersLoaderBase
@@ -37,11 +38,30 @@ class DiffusersClipLoader(DiffusersLoaderBase):
         
         clip_data = []
         for path in text_encoder_paths:
-            if isinstance(path, dict):
-                clip_data.append(path)
-            else:
-                DiffusersUtils.check_and_clear_cache('clip', path)
-                clip_data.append(comfy.utils.load_torch_file(path, safe_load=True))
+            try:
+                if isinstance(path, dict):
+                    clip_data.append(path)
+                elif path.endswith('index.json'):
+                    with open(path, 'r') as f:
+                        index_data = json.load(f)
+                    weight_map = index_data['weight_map']
+                    state_dict = {}
+                    
+                    for key, file in weight_map.items():
+                        file_path = os.path.join(os.path.dirname(path), file)
+                        part_dict = comfy.utils.load_torch_file(file_path, safe_load=True)
+                        state_dict.update(part_dict)
+                        del part_dict
+                        torch.cuda.empty_cache()
+                    
+                    clip_data.append(state_dict)
+                    
+                else:
+                    DiffusersUtils.check_and_clear_cache('clip', path)
+                    clip_data.append(comfy.utils.load_torch_file(path, safe_load=True))
+            except Exception as e:
+                print(f"Error loading clip model part from {path}: {e}")
+                raise
             
         print(f"DiffusersClipLoader: Loading CLIP model(s) from: {text_encoder_paths}")
         
@@ -54,6 +74,9 @@ class DiffusersClipLoader(DiffusersLoaderBase):
 
         if not hasattr(clip_model, 'tokenize'):
             raise AttributeError("DiffusersClipLoader: Loaded clip model does not have 'tokenize' method.")
+        
+        del clip_data
+        torch.cuda.empty_cache()
 
         return clip_model
     
@@ -81,14 +104,15 @@ class DiffusersClipLoader(DiffusersLoaderBase):
             text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir1))
             
             if model_type == "Flux":
-                # Combine split files for Flux models
-                combined_file_path = os.path.join(text_encoder_dir2, "combined_text_encoder.safetensors")
-                if not os.path.exists(combined_file_path):
-                    combined_file_path = DiffusersUtils.combine_safetensor_files(text_encoder_dir2, sub_dir_path, num_parts=2)
-                text_encoder_paths.append(combined_file_path)
+                # use the index file
+                index_files = [f for f in os.listdir(text_encoder_dir2) if f.endswith('index.json')]
+                if index_files:
+                    text_encoder_paths.append(os.path.join(text_encoder_dir2, index_files[0]))
+                else:
+                    print(f"No index file found in {text_encoder_dir2}. Checking for combined text encoder step")
+                    text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir2))
             else:
                 text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir2))
-
             
             if model_type == "SD3":
                 text_encoder_dir3 = os.path.join(sub_dir_path, "text_encoder_3")

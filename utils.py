@@ -58,19 +58,17 @@ class DiffusersUtils:
         return model_dirs
 
     @staticmethod
-    def find_model_files(directory, file_parts=None, num_parts=None):
+    def find_model_files(directory, file_parts=None):
         if not os.path.exists(directory):
             raise FileNotFoundError(f"The directory '{directory}' does not exist.")
         files = [os.path.join(directory, f) for f in os.listdir(directory) 
-                if f.endswith((".safetensors", ".bin"))]
+                if f.endswith((".safetensors", ".bin", "index.json"))]
         
         if not files:
-            raise FileNotFoundError(f"No .safetensors or .bin file found in {directory}")
+            raise FileNotFoundError(f"No .safetensors or .bin or index.json file found in {directory}")
         
         if file_parts:
             filtered_files = [file for file in files if any(part in file for part in file_parts)]
-        elif num_parts:
-            filtered_files = [file for file in files if any(f"0000{i+1}-of-" in file for i in range(num_parts))]
         else:
             filtered_files = files
         print("Filtered files:", filtered_files)
@@ -82,7 +80,7 @@ class DiffusersUtils:
         files = DiffusersUtils.find_model_files(directory)
         if files:
             return files[0]
-        raise FileNotFoundError(f"No .safetensors or .bin file found in {directory}")
+        raise FileNotFoundError(f"No .safetensors or .bin pr index.json file found in {directory}")
     
     @staticmethod
     def load_safetensor_paths(file_paths):
@@ -115,6 +113,7 @@ class DiffusersUtils:
         print("Combining Safetensors completed")
         return combined_tensors
         
+    #This function is not used. Will be removed in the subsequent release
     @staticmethod
     def combine_safetensor_files(directory, base_path, num_parts):
         print(f"Running combine_safetensor_files for directory: {directory}")
