@@ -96,15 +96,18 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
         
         with open(index_path, 'r') as f:
             index_data = json.load(f)
-        weight_map = index_data['weight_map']
-        state_dict = {}
         
-        for key, file in weight_map.items():
-            file_path = os.path.join(os.path.dirname(index_path), file)
-            part_dict = comfy.utils.load_torch_file(file_path, safe_load=True)
-            state_dict.update(part_dict)
-            del part_dict
-            #torch.cuda.empty_cache()
+        weight_map = index_data['weight_map']
+        base_path = os.path.dirname(index_path)
+        
+        state_dict = {}
+        for key, file_name in weight_map.items():
+            file_path = os.path.join(base_path, file_name)
+            if os.path.exists(file_path):
+                part_dict = comfy.utils.load_torch_file(file_path, safe_load=True)
+                state_dict.update({k: part_dict[k] for k in part_dict if k in weight_map})
+            else:
+                print(f"WARNING: File not found: {file_path}")
         
         print(f"Load from index function completed. Returning state_dict")
         return state_dict
