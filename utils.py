@@ -60,7 +60,10 @@ class DiffusersUtils:
             if os.path.exists(base_path):
                 for root, _, files in os.walk(base_path, followlinks=True):
                     if "model_index.json" in files:
-                        paths.append(os.path.relpath(root, start=base_path))
+                        relative_path = os.path.relpath(root, start=base_path)
+                        full_path = os.path.join(base_path, relative_path)
+                        dir_name = os.path.basename(relative_path)
+                        paths.append((dir_name, full_path))
         return paths
 
     @staticmethod
@@ -145,4 +148,30 @@ class DiffusersUtils:
             print(f"Error in combine_safetensor_files: {e}")
             # If combining fails, return the path to the first file as a fallback
             return part_files[0]
+
+    @staticmethod
+    def get_unique_display_names(model_directories):
+        unique_names = {}
+        for dir_name, full_path in model_directories:
+            if dir_name in unique_names:
+                unique_names[dir_name].append(full_path)
+            else:
+                unique_names[dir_name] = [full_path]
+        
+        display_names = []
+        for dir_name, paths in unique_names.items():
+            if len(paths) == 1:
+                display_names.append(dir_name)
+            else:
+                for i, path in enumerate(paths):
+                    display_names.append(f"{dir_name} ({i+1})")
+        
+        return display_names, unique_names
     
+    @staticmethod
+    def get_full_path(dir_name):
+        model_directories = DiffusersUtils.get_model_directories()
+        for name, path in model_directories:
+            if name == dir_name:
+                return path
+        raise ValueError(f"Directory not found: {dir_name}")

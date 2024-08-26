@@ -10,10 +10,9 @@ import torch
 class DiffusersUNETLoader(DiffusersLoaderBase):
     @classmethod
     def INPUT_TYPES(cls):
-        model_directories = DiffusersUtils.get_model_directories()
         return {
             "required": {
-                "sub_directory": (model_directories,),
+                "sub_directory": (DiffusersUtils.get_unique_display_names(DiffusersUtils.get_model_directories())[0],),
                 "transformer_parts": (["all", "part_1", "part_2", "part_3"],),
                 "weight_dtype": (["default", "fp8_e4m3fn", "fp8_e5m2"],),
             }
@@ -29,17 +28,26 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
 
     @classmethod
     def load_model(cls, sub_directory, transformer_parts="all", weight_dtype="default"):
+        if os.path.exists(sub_directory):
+            full_path = sub_directory
+        else:
+            model_directories = DiffusersUtils.get_model_directories()
+            _, unique_names = DiffusersUtils.get_unique_display_names(model_directories)
+            
+            if "(" in sub_directory:
+                dir_name, index = sub_directory.rsplit(" (", 1)
+                index = int(index[:-1]) - 1
+                full_path = unique_names[dir_name][index]
+            else:
+                full_path = unique_names[sub_directory][0]
         
-        base_paths = DiffusersUtils.get_base_path()
+        if not os.path.exists(full_path):
+            raise ValueError(f"Selected directory does not exist: {full_path}")
         
-        sub_dir_path = next((os.path.join(base_path, sub_directory) for base_path in base_paths if os.path.exists(os.path.join(base_path, sub_directory))), None)
-        if sub_dir_path is None:
-            raise ValueError(f"Subdirectory '{sub_directory}' not found in any of the diffusers paths.")
-        
-        model_type = cls.detect_model_type(sub_dir_path)
+        model_type = cls.detect_model_type(full_path)
         print(f"DiffusersUNETLoader: Detected model type: {model_type}")
         
-        unet_path = cls.get_unet_path(sub_dir_path, model_type, transformer_parts)
+        unet_path = cls.get_unet_path(full_path, model_type, transformer_parts)
         DiffusersUtils.check_and_clear_cache('unet', unet_path)
         
         print(f"DiffusersUNETLoader: Attempting to load UNET model from: {unet_path}")
@@ -123,9 +131,9 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
         return model
     
     @classmethod
-    def get_unet_path(cls, sub_dir_path, model_type, transformer_parts):
+    def get_unet_path(cls, full_path, model_type, transformer_parts):
         if model_type in ["AuraFlow", "Flux", "SD3"]:
-            unet_folder = os.path.join(sub_dir_path, 'transformer')
+            unet_folder = os.path.join(full_path, 'transformer')
             print(f"Using transformer folder for {model_type}: {unet_folder}")
             if model_type == "SD3":
                 return cls.handle_sd3_transformer(unet_folder)
@@ -134,10 +142,10 @@ class DiffusersUNETLoader(DiffusersLoaderBase):
             elif model_type == "Flux":
                 return cls.handle_flux_transformer(unet_folder, transformer_parts)
         else:  # SD15, SDXL, etc.
-            unet_folder = os.path.join(sub_dir_path, 'unet')
+            unet_folder = os.path.join(full_path, 'unet')
             if not os.path.exists(unet_folder):
                 #Fallback to transformer folder if unet folder does not exist
-                unet_folder = os.path.join(sub_dir_path, 'transformer')	
+                unet_folder = os.path.join(full_path, 'transformer')	
                 if os.path.exists(unet_folder):
                     print(f"Unet folder not found, using transformer folder: {unet_folder}")
                     return cls.handle_flux_transformer(unet_folder, transformer_parts)

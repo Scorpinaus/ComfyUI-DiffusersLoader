@@ -16,10 +16,9 @@ class DiffusersVAELoader(DiffusersLoaderBase):
     }
     @classmethod
     def INPUT_TYPES(cls):
-        model_directories = DiffusersUtils.get_model_directories()
         return {
             "required": {
-                "sub_directory": (model_directories,),
+                "sub_directory": (DiffusersUtils.get_unique_display_names(DiffusersUtils.get_model_directories())[0],),
                 "vae_type": (["default"] + list(cls.VAE_CONFIGS.keys()),),
             }
         }
@@ -40,13 +39,24 @@ class DiffusersVAELoader(DiffusersLoaderBase):
             return cls.load_taesd(vae_type)
 
     @classmethod
-    def load_default_vae(cls, sub_directory):       
-        base_paths = DiffusersUtils.get_base_path()
-        sub_dir_path = next((os.path.join(base_path, sub_directory) for base_path in base_paths if os.path.exists(os.path.join(base_path, sub_directory))), None)
-        if sub_dir_path is None:
-            raise ValueError(f"Subdirectory '{sub_directory}' not found in any of the diffusers paths.")
+    def load_default_vae(cls, sub_directory):
+        if os.path.exists(sub_directory):
+            full_path = sub_directory
+        else:       
+            model_directories = DiffusersUtils.get_model_directories()
+            _, unique_names = DiffusersUtils.get_unique_display_names(model_directories)
+            
+            if "(" in sub_directory:
+                dir_name, index = sub_directory.rsplit(" (", 1)
+                index = int(index[:-1]) - 1
+                full_path = unique_names[dir_name][index]
+            else:
+                full_path = unique_names[sub_directory][0]
         
-        vae_folder = os.path.join(sub_dir_path, "vae")
+        if not os.path.exists(full_path):
+            raise ValueError(f"Selected directory does not exist: {full_path}")
+        
+        vae_folder = os.path.join(full_path, "vae")
         vae_path = DiffusersUtils.find_model_file(vae_folder)
         DiffusersUtils.check_and_clear_cache('vae', vae_path)
         
@@ -62,7 +72,7 @@ class DiffusersVAELoader(DiffusersLoaderBase):
     @staticmethod
     def load_taesd(vae_type):
         sd = {}
-        vae_approx_path = os.path.join(os.path.dirname(DiffusersUtils.get_base_path()), "vae_approx")
+        vae_approx_path = os.path.join(os.path.dirname(DiffusersUtils.get_base_path()[0]), "vae_approx")
         # Validation check for vae_approx_path
         if not os.path.exists(vae_approx_path):
             raise FileNotFoundError(f"The vae_approx path '{vae_approx_path}' does not exist.")

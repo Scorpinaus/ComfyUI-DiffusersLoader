@@ -9,10 +9,11 @@ import os
 class CombinedDiffusersLoader:
     @classmethod
     def INPUT_TYPES(cls):
-        model_directories = DiffusersUtils.get_model_directories()
+        display_names, _ = DiffusersUtils.get_unique_display_names(DiffusersUtils.get_model_directories())
+        
         return {
             "required": {
-                "sub_directory": (model_directories,),
+                "sub_directory": (display_names,),
                 "clip_type": (["stable_diffusion", "stable_cascade", "sd3", "stable_audio", "sdxl", "flux"],),
                 "transformer_parts": (["all", "part_1", "part_2", "part_3"],),
                 "vae_type": (["default", "taesd", "taesdxl", "taesd3", "taef1"],),
@@ -27,19 +28,24 @@ class CombinedDiffusersLoader:
     @classmethod
     def load_models(cls, sub_directory, clip_type="stable_diffusion", transformer_parts="all", vae_type="default", weight_dtype="default"):
         
-        base_paths = DiffusersUtils.get_base_path()
-        sub_dir_path = next((os.path.join(base_path, sub_directory) for base_path in base_paths if os.path.exists(os.path.join(base_path, sub_directory))), None)
-        if sub_dir_path is None:
-            raise ValueError(f"Subdirectory '{sub_directory}' not found in any of the diffusers paths.")
+        model_directories = DiffusersUtils.get_model_directories()
+        _, unique_names = DiffusersUtils.get_unique_display_names(model_directories)
         
-        model_type = DiffusersLoaderBase.detect_model_type(sub_dir_path)
-        print(f"Detected model type: {model_type}")
-
-        unet_model, = DiffusersUNETLoader.load_model(sub_directory, transformer_parts, weight_dtype)
-
-        clip_model = DiffusersClipLoader.load_model(sub_directory, clip_type)
+        if "(" in sub_directory:
+            dir_name, index = sub_directory.rsplit(" (", 1)
+            index = int(index[:-1]) - 1
+            full_path = unique_names[dir_name][index]
+        else:
+            full_path = unique_names[sub_directory][0]
         
-        vae_model = DiffusersVAELoader.load_model(sub_directory, vae_type)
+        if not os.path.exists(full_path):
+            raise ValueError(f"Model directory '{full_path}' not found.")        
+
+        unet_model, = DiffusersUNETLoader.load_model(full_path, transformer_parts, weight_dtype)
+
+        clip_model = DiffusersClipLoader.load_model(full_path, clip_type)
+        
+        vae_model = DiffusersVAELoader.load_model(full_path, vae_type)
 
         return unet_model, clip_model, vae_model
 

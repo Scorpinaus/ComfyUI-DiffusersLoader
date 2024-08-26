@@ -10,10 +10,9 @@ from .utils import DiffusersUtils
 class DiffusersClipLoader(DiffusersLoaderBase):
     @classmethod
     def INPUT_TYPES(cls):
-        model_directories = DiffusersUtils.get_model_directories()
         return {
             "required": {
-                "sub_directory": (model_directories,),
+                "sub_directory": (DiffusersUtils.get_unique_display_names(DiffusersUtils.get_model_directories())[0],),
                 "clip_type": (["stable_diffusion", "stable_cascade", "sd3", "stable_audio", "sdxl", "flux"],),
             }
         }
@@ -28,18 +27,27 @@ class DiffusersClipLoader(DiffusersLoaderBase):
 
     @classmethod
     def load_model(cls, sub_directory, clip_type="stable_diffusion"):
+        if os.path.exists(sub_directory):
+            full_path = sub_directory
+        else:
+            model_directories = DiffusersUtils.get_model_directories()
+            _, unique_names = DiffusersUtils.get_unique_display_names(model_directories)
         
-        base_paths = DiffusersUtils.get_base_path()
-        sub_dir_path = next((os.path.join(base_path, sub_directory) for base_path in base_paths if os.path.exists(os.path.join(base_path, sub_directory))), None)
+            if "(" in sub_directory:
+                dir_name, index = sub_directory.rsplit(" (", 1)
+                index = int(index[:-1]) - 1
+                full_path = unique_names[dir_name][index]
+            else:
+                full_path = unique_names[sub_directory][0]
         
-        if sub_dir_path is None:
-            raise ValueError(f"Subdirectory '{sub_directory}' not found in any of the diffusers paths.")
+        if not os.path.exists(full_path):
+            raise ValueError(f"Selected directory does not exist: {full_path}")
         
-        model_type = cls.detect_model_type(sub_dir_path)
+        model_type = cls.detect_model_type(full_path)
 
         clip_type_enum = cls.get_clip_type_enum(clip_type)
         
-        text_encoder_paths = cls.get_text_encoder_paths(sub_dir_path, model_type)
+        text_encoder_paths = cls.get_text_encoder_paths(full_path, model_type)
         
         clip_data = []
         for path in text_encoder_paths:
@@ -72,7 +80,7 @@ class DiffusersClipLoader(DiffusersLoaderBase):
         
         try:
             clip_model = comfy.sd.load_text_encoder_state_dicts(clip_data, 
-            embedding_directory=os.path.join(sub_dir_path, "embeddings"), clip_type=clip_type_enum)
+            embedding_directory=os.path.join(full_path, "embeddings"), clip_type=clip_type_enum)
         except Exception as e:
             print(f"DiffusersClipLoader: Error loading clip model: {e}")
             raise
@@ -99,12 +107,12 @@ class DiffusersClipLoader(DiffusersLoaderBase):
         return clip_type_map.get(clip_type, comfy.sd.CLIPType.STABLE_DIFFUSION)
     
     @classmethod
-    def get_text_encoder_paths(cls, sub_dir_path, model_type):
+    def get_text_encoder_paths(cls, full_path, model_type):
         text_encoder_paths = []
         
         if model_type in ["SDXL", "SD3", "Flux"]:
-            text_encoder_dir1 = os.path.join(sub_dir_path, "text_encoder")
-            text_encoder_dir2 = os.path.join(sub_dir_path, "text_encoder_2")
+            text_encoder_dir1 = os.path.join(full_path, "text_encoder")
+            text_encoder_dir2 = os.path.join(full_path, "text_encoder_2")
             
             text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir1))
             
@@ -120,7 +128,7 @@ class DiffusersClipLoader(DiffusersLoaderBase):
                 text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir2))
             
             if model_type == "SD3":
-                text_encoder_dir3 = os.path.join(sub_dir_path, "text_encoder_3")
+                text_encoder_dir3 = os.path.join(full_path, "text_encoder_3")
                 
                 #For text_encoder_3, we will use the index file
                 index_file = os.path.join(text_encoder_dir3, "text_encoder_3_model.safetensors.index.fp16.json")
@@ -131,7 +139,7 @@ class DiffusersClipLoader(DiffusersLoaderBase):
                     text_encoder_paths.append(DiffusersUtils.find_model_file(text_encoder_dir3))
         
         else: #For SD15 or other single text encoder models
-            text_encoder_dir = os.path.join(sub_dir_path, "text_encoder")
+            text_encoder_dir = os.path.join(full_path, "text_encoder")
             text_encoder_paths = [DiffusersUtils.find_model_file(text_encoder_dir)]
         
         return text_encoder_paths
