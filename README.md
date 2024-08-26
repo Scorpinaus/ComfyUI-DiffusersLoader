@@ -30,8 +30,6 @@ Follow these steps to install and set up the project:
 
 3. Connect the DiffusersLoader to your workflow
 
-
-
 ## Features
 The CombinedDiffusersLoader supports loading of diffusers checkpoints for:
 - SD 1.5
@@ -40,6 +38,9 @@ The CombinedDiffusersLoader supports loading of diffusers checkpoints for:
 - SD3
 - AuraFlow
 - Flux
+
+Supports loading via extra_model_paths.yaml - Using ComfyUI
+- If there are 2 model directories of the same name in different places, the model_name(1) refers to the directory in your 1st base path while model_name(2) refers to the directory in your 2nd base path.
 
 ### Workflow Example
 The combined loader work in the same manner as existing checkpoints loader as seen in this workflow: 
