@@ -28,7 +28,7 @@ Follow these steps to install and set up the project:
   - Add Nodes -> DiffusersLoader -> Combined -> CombinedDiffusersLoader
   - ![image](https://github.com/user-attachments/assets/79a576b2-dc27-49e4-a7c7-ec0e01bc5bad)
 
-3. Connect the DiffusersLoader
+3. Connect the DiffusersLoader to your workflow
 
 
 
@@ -48,12 +48,16 @@ The combined loader work in the same manner as existing checkpoints loader as se
 
 Select the name of the diffusers checkpoint folder from the dropdown list and connect the nodes.
 
-Take note for SD3, AuraFlow and Flux:
-- The first run through will be slightly slower due to creation of a combined_safetensors.safetensors
 
 ## Limitations & Future Improvements
 - Add support for other compatible diffusers format checkpoints
-- For AuraFlow and SD3, the loading and combining for the combined_model.safetensors will have a delay for low-vram or low-system ram machines
+  - Future model_types:
+    - HunyuanDiT
+    - PixArt
+    - Kolors
+    Note: This will need to raise a PR on main comfyUI repo
+- For Flux, use of default weight_dtype would OOM (Use fp8-based d-types)
+
 
 
 ## Contributing
@@ -67,5 +71,11 @@ Hafiz Saffie - hafiz.safs@gmail.com
 
 Project Link: https://github.com/Scorpinaus/ComfyUI-DiffusersLoader
 
-## Version History
+## Update History
+26/8 - Improved on model detection to include extra_model_paths.yaml.
+25/8 - Implemented multi-file loading support where the combined_safetensor.safetensor file method is used as a back-up
 21/8 - Compatibility Update With ComfyUI, Addition of Flux Support
+30/7 - Added repo to comfyUI registry
+28/7 - Added AuraFlow support
+20/6 - Added SD3 support
+2/6 - Initial commit

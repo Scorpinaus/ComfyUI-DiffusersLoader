@@ -9,8 +9,7 @@ import os
 class CombinedDiffusersLoader:
     @classmethod
     def INPUT_TYPES(cls):
-        base_path = DiffusersUtils.get_base_path()
-        model_directories = DiffusersUtils.get_model_directories(base_path)
+        model_directories = DiffusersUtils.get_model_directories()
         return {
             "required": {
                 "sub_directory": (model_directories,),
@@ -28,12 +27,15 @@ class CombinedDiffusersLoader:
     @classmethod
     def load_models(cls, sub_directory, clip_type="stable_diffusion", transformer_parts="all", vae_type="default", weight_dtype="default"):
         
-        base_path = DiffusersUtils.get_base_path()
-        sub_dir_path = os.path.join(base_path, sub_directory)
+        base_paths = DiffusersUtils.get_base_path()
+        sub_dir_path = next((os.path.join(base_path, sub_directory) for base_path in base_paths if os.path.exists(os.path.join(base_path, sub_directory))), None)
+        if sub_dir_path is None:
+            raise ValueError(f"Subdirectory '{sub_directory}' not found in any of the diffusers paths.")
+        
         model_type = DiffusersLoaderBase.detect_model_type(sub_dir_path)
         print(f"Detected model type: {model_type}")
 
-        unet_model = DiffusersUNETLoader.load_model(sub_directory, transformer_parts, weight_dtype)
+        unet_model, = DiffusersUNETLoader.load_model(sub_directory, transformer_parts, weight_dtype)
 
         clip_model = DiffusersClipLoader.load_model(sub_directory, clip_type)
         

@@ -2,6 +2,9 @@ import os
 import safetensors.torch
 import torch
 import gc
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+import folder_paths
 
 class DiffusersUtils:
     _model_cache = {'clip': None, 'unet': None, 'vae': None}
@@ -43,19 +46,22 @@ class DiffusersUtils:
     
     @staticmethod
     def get_base_path():
-        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'diffusers'))
-        if not os.path.exists(base_path):
+        base_path = folder_paths.get_folder_paths("diffusers")
+        #print(f"Base path: {base_path}")
+        if not base_path:
             raise FileNotFoundError(f"The base path '{base_path}' does not exist.")
         return base_path
 
     @staticmethod
-    def get_model_directories(base_path):
-        model_dirs = []
-        for root, dirs, files in os.walk(base_path):
-            if "model_index.json" in files:
-                model_dirs.append(os.path.relpath(root, base_path))
-            dirs[:] = [d for d in dirs if d not in ["vae", "unet", "text_encoder", "text_encoder_2", "text_encoder_3", "transformer"]]
-        return model_dirs
+    def get_model_directories():
+        paths = []
+        base_paths = DiffusersUtils.get_base_path()
+        for base_path in base_paths:
+            if os.path.exists(base_path):
+                for root, _, files in os.walk(base_path, followlinks=True):
+                    if "model_index.json" in files:
+                        paths.append(os.path.relpath(root, start=base_path))
+        return paths
 
     @staticmethod
     def find_model_files(directory, file_parts=None):

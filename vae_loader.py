@@ -16,9 +16,10 @@ class DiffusersVAELoader(DiffusersLoaderBase):
     }
     @classmethod
     def INPUT_TYPES(cls):
+        model_directories = DiffusersUtils.get_model_directories()
         return {
             "required": {
-                "sub_directory": (DiffusersUtils.get_model_directories(DiffusersUtils.get_base_path()),),
+                "sub_directory": (model_directories,),
                 "vae_type": (["default"] + list(cls.VAE_CONFIGS.keys()),),
             }
         }
@@ -40,8 +41,11 @@ class DiffusersVAELoader(DiffusersLoaderBase):
 
     @classmethod
     def load_default_vae(cls, sub_directory):       
-        base_path = DiffusersUtils.get_base_path()
-        sub_dir_path = os.path.join(base_path, sub_directory)
+        base_paths = DiffusersUtils.get_base_path()
+        sub_dir_path = next((os.path.join(base_path, sub_directory) for base_path in base_paths if os.path.exists(os.path.join(base_path, sub_directory))), None)
+        if sub_dir_path is None:
+            raise ValueError(f"Subdirectory '{sub_directory}' not found in any of the diffusers paths.")
+        
         vae_folder = os.path.join(sub_dir_path, "vae")
         vae_path = DiffusersUtils.find_model_file(vae_folder)
         DiffusersUtils.check_and_clear_cache('vae', vae_path)
